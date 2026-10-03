@@ -15,7 +15,7 @@ An autonomous multi-agent AI engine that performs M&A due diligence on any compa
 
 Vanguard replaces a multi-week, $500K consulting engagement with a **60-second AI analysis**:
 
-1. **Gathers Intelligence** — Queries 5 SerpApi engines in parallel: **Google Search, News, Jobs, Shopping, Scholar**
+1. **Gathers Intelligence** — Queries 5 SerpApi engines in parallel
 2. **Synthesizes a Report** — Generates a structured due diligence summary (Legal, Talent, Products, IP)
 3. **Runs an Adversarial Debate** — A Bull analyst argues FOR the deal; a Bear analyst tears it apart
 4. **Delivers a Verdict** — A CEO agent makes the final call: **ACQUIRE**, **PASS**, or **RENEGOTIATE**
@@ -23,43 +23,29 @@ Vanguard replaces a multi-week, $500K consulting engagement with a **60-second A
 
 ---
 
-## 🏗️ Architecture
-[ User Input: Company + Description ]
-│
-▼
-┌───────────────────────────────┐
-│ Phase 01: Intelligence │
-│ 5× SerpApi Engines │
-│ • Google Search │
-│ • Google News (legal risks) │
-│ • Google Jobs (talent) │
-│ • Google Shopping (products) │
-│ • Google Scholar (IP/patents)│
-└───────────────────────────────┘
-│
-▼
-┌───────────────────────────────┐
-│ Phase 02: Intel Report │
-│ Reporter Agent (Groq LLM) │
-└───────────────────────────────┘
-│
-┌─────┴─────┐
-▼ ▼
-┌────────────┐ ┌────────────┐
-│ 🐂 BULL │ │ 🐻 BEAR │
-│ FOR deal │ │ AGAINST │
-└────────────┘ └────────────┘
-│ │
-└─────┬─────┘
-▼
-┌───────────────────────────────┐
-│ Phase 04: ⚖️ Judge (CEO) │
-│ ACQUIRE / PASS / RENEGOTIATE │
-└───────────────────────────────┘
-│
-▼
-[ PDF Report Downloaded ]
+## 🏗️ How It Works
 
+### Phase 01 — Intelligence Gathering
+The engine queries **5 SerpApi engines** simultaneously:
+- **Google Search** — company overview
+- **Google News** — legal risks, lawsuits, PR crises
+- **Google Jobs** — talent & hiring trends
+- **Google Shopping** — product pricing & market presence
+- **Google Scholar** — patents & research
+
+### Phase 02 — Intel Report
+A Groq-powered LLM synthesizes the raw search data into a structured due diligence summary across 4 categories: **Legal, Talent, Products, and IP**.
+
+### Phase 03 — Adversarial Debate
+Two AI agents argue the deal:
+- **🐂 The Bull** — argues FOR the acquisition (growth, talent, market position)
+- **🐻 The Bear** — argues AGAINST it (lawsuits, regulatory risk, cash burn)
+
+### Phase 04 — CEO Verdict
+A third agent, acting as the CEO, listens to both sides and delivers one of three verdicts:
+- ✅ **ACQUIRE**
+- ❌ **PASS**
+- ⚠️ **RENEGOTIATE** (with 3 concrete safeguards)
 
 ---
 
@@ -80,5 +66,5 @@ Vanguard replaces a multi-week, $500K consulting engagement with a **60-second A
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/YOUR_USERNAME/Vanguard-MA-Due-Diligence.git
+git clone https://github.com/Mayank-Kadam/Vanguard-MA-Due-Diligence.git
 cd Vanguard-MA-Due-Diligence
