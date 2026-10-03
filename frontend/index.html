@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VANGUARD — M&A Due Diligence Engine</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F2EFE9;
+    --ink: #0A0A0A;
+    --accent: #FF3D00;
+    --muted: #6B6B6B;
+    --line: rgba(10,10,10,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Archivo', sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .display {
+    font-family: 'Archivo Black', sans-serif;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ============================================
+     INTRO PRELOADER
+     ============================================ */
+  #intro {
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    color: var(--cream);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  .intro-logo {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(3rem, 12vw, 9rem);
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    text-transform: uppercase;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .intro-logo span {
+    display: inline-block;
+    transform: translateY(120%);
+  }
+
+  .intro-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 1.5rem;
+    opacity: 0;
+  }
+
+  .intro-bar-wrap {
+    width: min(400px, 80vw);
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    margin-top: 3rem;
+    overflow: hidden;
+  }
+
+  .intro-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .intro-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1rem;
+  }
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  .hero-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(2.5rem, 8.5vw, 7.5rem);
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    color: var(--ink);
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .hero-title .line-1,
+  .hero-title .line-2 {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.05em;
+  }
+
+  .hero-title .line-2 { color: var(--accent); }
+
+  .hero-title .line-inner {
+    display: inline-block;
+    transform: translateY(110%);
+    will-change: transform;
+  }
+
+  /* ============================================
+     STRUCTURE
+     ============================================ */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--cream);
+    border-bottom: 1px solid var(--line);
+    padding: 1.25rem 0;
+  }
+
+  .topbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.25rem;
+    letter-spacing: -0.03em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-mark {
+    width: 30px;
+    height: 30px;
+    background: var(--accent);
+    display: grid;
+    place-items: center;
+    color: white;
+    font-size: 0.9rem;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    background: #16A34A;
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ============================================
+     HERO
+     ============================================ */
+  .hero {
+    padding: 4rem 0 4rem;
+    position: relative;
+  }
+
+  .hero-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    flex-wrap: wrap;
+    gap: 1rem;
+    opacity: 0;
+    position: relative;
+    z-index: 5;
+  }
+
+  @media (min-width: 900px) {
+    .hero-meta { padding-right: 220px; }
+  }
+
+  .hero-svg-deco {
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+    width: 180px;
+    height: 180px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero-svg-deco { width: 100px; height: 100px; top: 0.5rem; right: 1rem; }
+  }
+
+  .hero-svg-deco path, .hero-svg-deco line, .hero-svg-deco circle {
+    stroke: var(--accent);
+    stroke-width: 2;
+    fill: none;
+  }
+
+  .hero-title-block {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 3rem;
+  }
+
+  .hero-sub {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--line);
+    align-items: start;
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (max-width: 900px) {
+    .hero-sub { grid-template-columns: 1fr; gap: 2rem; padding-top: 2rem; }
+  }
+
+  .hero-sub p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 520px;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 900px) {
+    .tag-row { justify-content: flex-start; }
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .tag.accent { background: var(--accent); }
+
+  /* ============================================
+     FORM
+     ============================================ */
+  .form-section {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .form-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+
+  .form-label-block {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    padding-top: 1rem;
+    white-space: nowrap;
+  }
+
+  .form-label-block .num {
+    display: block;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-fields { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .field-group label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    font-family: 'Archivo', sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field-input:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 5px 5px 0 0 var(--accent);
+  }
+
+  textarea.field-input { resize: none; font-family: 'Archivo', sans-serif; }
+
+  .submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1.25rem 1.75rem;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 0;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.2s;
+  }
+
+  .submit-btn:hover { background: var(--accent); }
+  .submit-btn:active { transform: translate(2px, 2px); }
+
+  .submit-btn .arrow {
+    font-size: 1.3rem;
+    transition: transform 0.3s;
+  }
+
+  .submit-btn:hover .arrow { transform: translateX(8px); }
+
+  /* ============================================
+     MARQUEE
+     ============================================ */
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    padding: 1.25rem 0;
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .marquee {
+    display: flex;
+    gap: 3rem;
+    white-space: nowrap;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    will-change: transform;
+  }
+
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+  }
+
+  .marquee-item::after {
+    content: "◆";
+    color: var(--accent);
+  }
+
+  /* ============================================
+     WAR ROOM
+     ============================================ */
+  .warroom { padding: 3rem 0 6rem; display: none; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--ink);
+    color: var(--cream);
+    margin-bottom: 3rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .status-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.6;
+  }
+
+  .status-value {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-top: 0.25rem;
+  }
+
+  .timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--ink);
+    flex-wrap: wrap;
+  }
+
+  .section-header .num {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 2.5rem;
+    color: var(--accent);
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  .section-header .title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(1.25rem, 2.5vw, 2rem);
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .section-header .label {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+
+  .engines-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 4rem;
+  }
+
+  @media (max-width: 900px) {
+    .engines-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .engine-card {
+    background: var(--cream);
+    padding: 1.5rem 1.25rem;
+    transition: background 0.3s, color 0.3s;
+    position: relative;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .engine-card .icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+
+  .engine-card .name {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.35rem;
+  }
+
+  .engine-card .status-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  .engine-card.active { background: var(--ink); color: var(--cream); }
+  .engine-card.active .status-label { color: var(--accent); }
+  .engine-card.done .status-label::before { content: "✓ "; color: #16A34A; }
+
+  .block {
+    padding: 2.5rem;
+    border: 1px solid var(--line);
+    margin-bottom: 2rem;
+    background: white;
+  }
+
+  .block.report { border-left: 4px solid var(--ink); }
+
+  .block-content {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .debate-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .debate-grid { grid-template-columns: 1fr; }
+  }
+
+  .debate-card {
+    padding: 2.5rem;
+    border: 1px solid var(--line);
+    background: white;
+    position: relative;
+  }
+
+  .debate-card.bull { border-top: 6px solid #16A34A; }
+  .debate-card.bear { border-top: 6px solid #DC2626; }
+
+  .debate-card .tag-side {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+
+  .debate-card.bull .tag-side { color: #16A34A; }
+  .debate-card.bear .tag-side { color: #DC2626; }
+
+  .debate-card .title-side {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.75rem;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+    line-height: 1;
+  }
+
+  .debate-card .content {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .verdict-wrap {
+    padding: 4rem 2rem;
+    background: var(--ink);
+    color: var(--cream);
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verdict-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.6;
+    margin-bottom: 1rem;
+  }
+
+  .verdict-text {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+
+  .verdict-text.acquire { color: #22C55E; }
+  .verdict-text.pass { color: #EF4444; }
+  .verdict-text.renegotiate { color: #F59E0B; }
+  .verdict-text.review { color: #A855F7; }
+
+  .verdict-badge-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .verdict-chip {
+    padding: 0.4rem 0.9rem;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.15rem 2rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 0;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .pdf-btn:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 0 var(--ink); }
+
+  .hidden-init { display: none; }
+
+  .reset-link {
+    display: block;
+    margin: 3rem auto 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-align: center;
+  }
+
+  .reset-link:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- INTRO PRELOADER -->
+<div id="intro">
+  <div class="intro-logo" id="intro-logo"></div>
+  <div class="intro-sub" id="intro-sub">M&A Intelligence Engine</div>
+  <div class="intro-bar-wrap">
+    <div class="intro-bar" id="intro-bar"></div>
+  </div>
+  <div class="intro-counter" id="intro-counter">LOADING 0%</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="logo">
+      <div class="logo-mark">V</div>
+      VANGUARD
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span>Systems Operational</span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero" class="hero">
+  <div class="container">
+
+    <svg class="hero-svg-deco" viewBox="0 0 200 200">
+      <path class="line" d="M 10 190 L 190 10" />
+      <path class="line" d="M 10 10 L 190 190" />
+      <circle class="line" cx="100" cy="100" r="60" />
+      <path class="line" d="M 10 100 L 190 100" />
+      <path class="line" d="M 100 10 L 100 190" />
+    </svg>
+
+    <div class="hero-meta">
+      <span>M&A INTELLIGENCE / V 1.0</span>
+      <span>EST. 2026 · INDIA</span>
+    </div>
+
+    <div class="hero-title-block">
+      <h1 class="hero-title" id="hero-title">
+        <span class="line-1"><span class="line-inner">DUE</span></span>
+        <span class="line-2"><span class="line-inner">DILIGENCE</span></span>
+      </h1>
+    </div>
+
+    <div class="hero-sub">
+      <p>
+        An autonomous multi-agent engine that investigates any company, simulates an adversarial debate between a Bull and a Bear analyst, and delivers a boardroom-ready acquisition verdict.
+      </p>
+      <div class="tag-row">
+        <span class="tag accent">5 SERPAPI ENGINES</span>
+        <span class="tag">BULL vs BEAR</span>
+        <span class="tag">PDF EXPORT</span>
+        <span class="tag">LIVE DATA</span>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-grid">
+        <div class="form-label-block">
+          <span class="num">01</span>
+          Input<br/>Parameters
+        </div>
+        <div class="form-fields">
+          <div class="field-group">
+            <label>Target Company</label>
+            <input id="company-input" type="text" class="field-input" placeholder="e.g. Tesla, Nvidia, Alt DRX" />
+          </div>
+          <div class="field-group">
+            <label>Business Context (helps the AI stay accurate)</label>
+            <textarea id="description-input" rows="3" class="field-input" placeholder="One or two sentences describing what the company does..."></textarea>
+          </div>
+          <button id="analyze-btn" class="submit-btn">
+            <span>Launch Analysis</span>
+            <span class="arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee" id="marquee">
+    <div class="marquee-item">SERPAPI × 5 ENGINES</div>
+    <div class="marquee-item">ADVERSARIAL AI DEBATE</div>
+    <div class="marquee-item">BOARDROOM VERDICT</div>
+    <div class="marquee-item">PDF REPORT EXPORT</div>
+    <div class="marquee-item">LIVE INTELLIGENCE</div>
+    <div class="marquee-item">SERPAPI × 5 ENGINES</div>
+    <div class="marquee-item">ADVERSARIAL AI DEBATE</div>
+    <div class="marquee-item">BOARDROOM VERDICT</div>
+    <div class="marquee-item">PDF REPORT EXPORT</div>
+    <div class="marquee-item">LIVE INTELLIGENCE</div>
+  </div>
+</div>
+
+<!-- WAR ROOM -->
+<section id="warroom" class="warroom">
+  <div class="container">
+
+    <div class="status-bar">
+      <div>
+        <div class="status-label">LIVE STATUS</div>
+        <div class="status-value" id="status-text">Initializing...</div>
+      </div>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+
+    <div class="section-header">
+      <div class="num">01</div>
+      <div class="title">Intelligence Gathering</div>
+      <div class="label">SERPAPI ENGINES</div>
+    </div>
+    <div class="engines-grid" id="engines-grid"></div>
+
+    <div id="reporter-section" class="hidden-init">
+      <div class="section-header">
+        <div class="num">02</div>
+        <div class="title">Intel Report</div>
+        <div class="label">SYNTHESIS</div>
+      </div>
+      <div class="block report">
+        <div id="reporter-output" class="block-content"></div>
+      </div>
+    </div>
+
+    <div id="debate-section" class="hidden-init">
+      <div class="section-header">
+        <div class="num">03</div>
+        <div class="title">Adversarial Debate</div>
+        <div class="label">BULL vs BEAR</div>
+      </div>
+      <div class="debate-grid">
+        <div class="debate-card bull" id="bull-card">
+          <div class="tag-side">🐂 FOR ACQUISITION</div>
+          <div class="title-side">The Bull</div>
+          <div class="content" id="bull-output"></div>
+        </div>
+        <div class="debate-card bear" id="bear-card">
+          <div class="tag-side">🐻 AGAINST ACQUISITION</div>
+          <div class="title-side">The Bear</div>
+          <div class="content" id="bear-output"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="verdict-section" class="hidden-init">
+      <div class="section-header">
+        <div class="num">04</div>
+        <div class="title">Final Ruling</div>
+        <div class="label">EXECUTIVE DECISION</div>
+      </div>
+
+      <div class="verdict-wrap">
+        <div class="verdict-label">EXECUTIVE DECISION</div>
+        <div class="verdict-text" id="verdict-text">—</div>
+        <div class="verdict-badge-row">
+          <div class="verdict-chip">🟢 ACQUIRE</div>
+          <div class="verdict-chip">🟡 RENEGOTIATE</div>
+          <div class="verdict-chip">🔴 PASS</div>
+        </div>
+      </div>
+
+      <div class="block" style="border-left: 4px solid var(--accent);">
+        <div class="block-content" id="judge-output"></div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <button id="download-btn" class="pdf-btn">
+          📄 Download Full Report (PDF)
+        </button>
+      </div>
+    </div>
+
+    <button class="reset-link" onclick="location.reload()">← Run Another Analysis</button>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="border-top: 1px solid var(--line); padding: 2rem 0; margin-top: 4rem;">
+  <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div class="mono" style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">
+      VANGUARD © 2026 — SERPAPI INDIA HACKATHON
+    </div>
+    <div class="mono" style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">
+      BUILT WITH SERPAPI · GROQ · ANIME.JS
+    </div>
+  </div>
+</footer>
+
+<script>
+// ======================================================
+// INTRO PRELOADER (Bulletproof)
+// ======================================================
+(function runIntro() {
+  const introLogo = document.getElementById('intro-logo');
+  const introEl = document.getElementById('intro');
+  const counterEl = document.getElementById('intro-counter');
+
+  try {
+    const text = 'VANGUARD';
+    introLogo.innerHTML = text.split('').map(l => `<span>${l}</span>`).join('');
+  } catch (e) { console.error('Intro logo error:', e); }
+
+  let hasFadedOut = false;
+  function fadeOutIntro() {
+    if (hasFadedOut) return;
+    hasFadedOut = true;
+    anime({
+      targets: introEl,
+      opacity: [1, 0],
+      duration: 700,
+      easing: 'easeInOutQuad',
+      complete: () => {
+        introEl.style.display = 'none';
+        runPageIntro();
+      }
+    });
+  }
+
+  setTimeout(fadeOutIntro, 3500);
+
+  try {
+    const timeline = anime.timeline({
+      easing: 'easeOutExpo',
+      complete: fadeOutIntro
+    });
+
+    timeline.add({
+      targets: '#intro-logo span',
+      translateY: ['120%', '0%'],
+      duration: 900,
+      delay: anime.stagger(80)
+    });
+
+    timeline.add({
+      targets: '#intro-sub',
+      opacity: [0, 1],
+      translateY: [10, 0],
+      duration: 600
+    }, '-=500');
+
+    timeline.add({
+      targets: '#intro-bar',
+      width: ['0%', '100%'],
+      duration: 1200,
+      easing: 'easeInOutQuart'
+    }, '-=200');
+
+    let counterVal = 0;
+    const counterInterval = setInterval(() => {
+      counterVal += 4;
+      if (counterVal >= 100) {
+        counterVal = 100;
+        clearInterval(counterInterval);
+      }
+      counterEl.textContent = `LOADING ${counterVal}%`;
+    }, 50);
+
+    timeline.add({ duration: 300 });
+  } catch (e) {
+    console.error('Intro timeline error:', e);
+    fadeOutIntro();
+  }
+})();
+
+// ======================================================
+// PAGE INTRO
+// ======================================================
+function runPageIntro() {
+  try {
+    const decoLines = anime.svg.createDrawable('.hero-svg-deco .line');
+    anime({
+      targets: decoLines,
+      draw: ['0 0', '0 1', '1 1'],
+      delay: anime.stagger(120),
+      duration: 1800,
+      ease: 'inOutQuad'
+    });
+  } catch (e) { console.error('SVG drawable error:', e); }
+
+  try {
+    anime({
+      targets: '.hero-title .line-inner',
+      translateY: ['110%', '0%'],
+      duration: 1100,
+      delay: anime.stagger(180, { start: 200 }),
+      ease: 'easeOutExpo'
+    });
+  } catch (e) { console.error('Title anim error:', e); }
+
+  try {
+    anime({
+      targets: '.hero-meta',
+      translateY: [15, 0],
+      opacity: [0, 1],
+      duration: 700,
+      delay: 100,
+      ease: 'easeOutQuad'
+    });
+  } catch (e) { console.error('Meta anim error:', e); }
+
+  try {
+    anime({
+      targets: '.hero-sub > *',
+      translateY: [30, 0],
+      opacity: [0, 1],
+      duration: 900,
+      delay: anime.stagger(150, { start: 700 }),
+      ease: 'easeOutExpo'
+    });
+  } catch (e) { console.error('Sub anim error:', e); }
+
+  try {
+    anime({
+      targets: '.form-section',
+      translateY: [40, 0],
+      opacity: [0, 1],
+      duration: 900,
+      delay: 1000,
+      ease: 'easeOutExpo'
+    });
+  } catch (e) { console.error('Form anim error:', e); }
+
+  try {
+    anime({
+      targets: '#marquee',
+      translateX: ['0%', '-50%'],
+      duration: 30000,
+      loop: true,
+      ease: 'linear'
+    });
+  } catch (e) { console.error('Marquee anim error:', e); }
+
+  window.animateEngineCards = function() {
+    anime({
+      targets: '.engine-card',
+      translateY: (target, index) => [60, 0],
+      opacity: (target, index) => [0, 1],
+      duration: 600,
+      delay: (target, index) => index * 90,
+      ease: 'easeOutExpo'
+    });
+  };
+}
+
+// ======================================================
+// ENGINE GRID
+// ======================================================
+const ENGINES = [
+  { key: 'web',      label: 'Google',   icon: '🔍' },
+  { key: 'news',     label: 'News',     icon: '📰' },
+  { key: 'jobs',     label: 'Jobs',     icon: '💼' },
+  { key: 'shopping', label: 'Shopping', icon: '🛒' },
+  { key: 'scholar',  label: 'Scholar',  icon: '🎓' },
+];
+
+function buildEngineGrid() {
+  const grid = document.getElementById('engines-grid');
+  grid.innerHTML = ENGINES.map(e => `
+    <div id="engine-${e.key}" class="engine-card">
+      <div class="icon">${e.icon}</div>
+      <div>
+        <div class="name">${e.label}</div>
+        <div class="status-label">IDLE</div>
+      </div>
+    </div>
+  `).join('');
+  if (window.animateEngineCards) window.animateEngineCards();
+}
+
+function setEngineState(key, state) {
+  const el = document.getElementById(`engine-${key}`);
+  if (!el) return;
+  const label = el.querySelector('.status-label');
+  if (state === 'active') {
+    el.classList.add('active');
+    label.textContent = 'SCANNING...';
+  } else if (state === 'done') {
+    el.classList.remove('active');
+    el.classList.add('done');
+    label.textContent = 'COMPLETE';
+  }
+}
+
+// ======================================================
+// BUTTON
+// ======================================================
+document.getElementById('analyze-btn').addEventListener('click', () => {
+  const company = document.getElementById('company-input').value.trim();
+  const description = document.getElementById('description-input').value.trim();
+
+  if (!company) {
+    anime({
+      targets: '#company-input',
+      translateX: [-8, 8, -6, 6, -3, 3, 0],
+      duration: 500,
+      easing: 'easeOutQuad'
+    });
+    return;
+  }
+
+  anime({
+    targets: '#hero',
+    opacity: [1, 0],
+    translateY: [0, -40],
+    duration: 500,
+    easing: 'easeInQuad',
+    complete: () => {
+      document.getElementById('hero').style.display = 'none';
+      document.querySelector('.marquee-wrap').style.display = 'none';
+      const warroom = document.getElementById('warroom');
+      warroom.style.display = 'block';
+      buildEngineGrid();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      anime({ targets: warroom, opacity: [0, 1], duration: 600 });
+      runAnalysis(company, description);
+    }
+  });
+});
+
+// ======================================================
+// TIMER & STATUS
+// ======================================================
+let timerSeconds = 0;
+let timerInterval;
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+    const s = String(timerSeconds % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerInterval); }
+
+function setStatus(text) {
+  const el = document.getElementById('status-text');
+  el.textContent = text;
+  anime({ targets: el, opacity: [0, 1], translateY: [8, 0], duration: 300 });
+}
+
+function revealSection(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('hidden-init');
+  el.style.display = 'block';
+  anime({
+    targets: el,
+    opacity: [0, 1],
+    translateY: [30, 0],
+    duration: 700,
+    ease: 'easeOutExpo'
+  });
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+}
+
+function typewriter(el, text, speed = 6) {
+  el.textContent = '';
+  let i = 0;
+  const interval = setInterval(() => {
+    el.textContent = text.slice(0, i);
+    i += 4;
+    if (i >= text.length) {
+      el.textContent = text;
+      clearInterval(interval);
+    }
+  }, speed);
+}
+
+// ======================================================
+// STREAM FROM BACKEND
+// ======================================================
+async function runAnalysis(company, description) {
+  setStatus('Initializing pipeline...');
+  startTimer();
+
+  try {
+    const response = await fetch('http://localhost:8000/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ company, description })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split('\n\n');
+      buffer = parts.pop();
+      for (const part of parts) {
+        if (part.startsWith('data: ')) {
+          try {
+            const event = JSON.parse(part.slice(6));
+            handleEvent(event);
+          } catch (e) { /* ignore */ }
+        }
+      }
+    }
+
+    stopTimer();
+    setStatus('Analysis Complete');
+  } catch (err) {
+    setStatus('Error: ' + err.message);
+    stopTimer();
+  }
+}
+
+// ======================================================
+// EVENT HANDLER
+// ======================================================
+function handleEvent(event) {
+  const { type, data } = event;
+
+  if (type === 'start') {
+    window.vanguardCompany = data.company;
+    window.vanguardDescription = data.description;
+  }
+  if (type === 'reporter_complete') window.vanguardReport = data.report;
+  if (type === 'bull_complete') window.vanguardBull = data.bull;
+  if (type === 'bear_complete') window.vanguardBear = data.bear;
+
+  switch (type) {
+    case 'start':
+      setStatus(`Analyzing ${data.company}...`);
+      break;
+    case 'search_start':
+      setStatus(`Querying ${data.engine.toUpperCase()} engine...`);
+      setEngineState(data.engine, 'active');
+      break;
+    case 'search_complete':
+      setEngineState(data.engine, 'done');
+      break;
+    case 'reporter_start':
+      setStatus('Synthesizing intelligence report...');
+      revealSection('reporter-section');
+      break;
+    case 'reporter_complete':
+      typewriter(document.getElementById('reporter-output'), data.report, 5);
+      break;
+    case 'bull_start':
+      setStatus('Bull analyst preparing argument...');
+      revealSection('debate-section');
+      break;
+    case 'bull_complete':
+      anime({ targets: '#bull-card', translateX: [-40, 0], opacity: [0, 1], duration: 700, ease: 'easeOutExpo' });
+      typewriter(document.getElementById('bull-output'), data.bull, 6);
+      break;
+    case 'bear_start':
+      setStatus('Bear analyst preparing counter-argument...');
+      break;
+    case 'bear_complete':
+      anime({ targets: '#bear-card', translateX: [40, 0], opacity: [0, 1], duration: 700, delay: 200, ease: 'easeOutExpo' });
+      setTimeout(() => typewriter(document.getElementById('bear-output'), data.bear, 6), 300);
+      break;
+    case 'judge_start':
+      setStatus('CEO deliberating final verdict...');
+      break;
+    case 'judge_complete':
+      revealSection('verdict-section');
+      setTimeout(() => {
+        const vtext = document.getElementById('verdict-text');
+        let label, cls;
+        if (data.decision === 'ACQUIRE') { label = 'ACQUIRE'; cls = 'acquire'; }
+        else if (data.decision === 'PASS') { label = 'PASS'; cls = 'pass'; }
+        else if (data.decision === 'RENEGOTIATE') { label = 'RENEGOTIATE'; cls = 'renegotiate'; }
+        else { label = 'REVIEW'; cls = 'review'; }
+        vtext.textContent = label;
+        vtext.className = 'verdict-text ' + cls;
+        anime({
+          targets: '#verdict-text',
+          scale: [0.4, 1.1, 1],
+          opacity: [0, 1],
+          duration: 1200,
+          ease: 'easeOutElastic(1, .7)'
+        });
+        setTimeout(() => typewriter(document.getElementById('judge-output'), data.ruling, 5), 500);
+
+        window.vanguardData = {
+          company: window.vanguardCompany,
+          description: window.vanguardDescription,
+          report: window.vanguardReport,
+          bull: window.vanguardBull,
+          bear: window.vanguardBear,
+          ruling: data.ruling,
+          decision: data.decision
+        };
+      }, 300);
+      break;
+    case 'complete':
+      setStatus('Analysis Complete');
+      stopTimer();
+      break;
+  }
+}
+
+// ======================================================
+// HELPER: Markdown → HTML
+// ======================================================
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = text;
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  html = html.replace(/\\\*/g, '*');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  html = html.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  html = html.replace(/^#{1,6}\s+(.+)$/gm, '<h3 style="font-size:15px;margin:18px 0 8px 0;color:#FF3D00;border-bottom:1px solid #eee;padding-bottom:4px;">$1</h3>');
+  html = html.replace(/^\s*-{3,}\s*$/gm, '<hr style="border:none;border-top:1px solid #ddd;margin:14px 0;">');
+  html = html.replace(/^\s*[-•]\s+(.+)$/gm, '<li style="margin-bottom:5px;">$1</li>');
+  html = html.replace(/(?:<li[^>]*>[\s\S]*?<\/li>\s*)+/g, (match) => `<ul style="padding-left:22px;margin:8px 0;">${match}</ul>`);
+  html = html.replace(/\n/g, '<br/>');
+  html = html.replace(/(<\/?(?:h3|ul|li|hr|strong|em)[^>]*>)<br\/>/g, '$1');
+  html = html.replace(/(<br\/>){3,}/g, '<br/><br/>');
+  return html;
+}
+
+// ======================================================
+// HELPER: Unique timestamp
+// ======================================================
+function getTimestamp() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+}
+
+// ======================================================
+// PDF DOWNLOAD
+// ======================================================
+document.getElementById('download-btn').addEventListener('click', () => {
+  const d = window.vanguardData;
+  if (!d) return alert('No data available. Run an analysis first.');
+
+  const color = d.decision === 'ACQUIRE' ? '#16A34A' : d.decision === 'PASS' ? '#DC2626' : '#F59E0B';
+  const emoji = d.decision === 'ACQUIRE' ? '✅' : d.decision === 'PASS' ? '❌' : '⚠️';
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Please allow pop-ups for this site to download the PDF report.');
+    return;
+  }
+
+  const cleanCompany = d.company.replace(/[^a-z0-9]/gi, '_');
+  const ts = getTimestamp();
+  const uniqueFilename = `Vanguard_${cleanCompany}_${ts}_DueDiligence`;
+
+  const reportHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${uniqueFilename}</title>
+      <style>
+        * { box-sizing: border-box; }
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, Helvetica, sans-serif; padding: 20px; color: #0A0A0A; line-height: 1.6; margin: 0; font-size: 13px; }
+        h1 { font-family: 'Arial Black', sans-serif; font-size: 32px; margin: 0; color: #0A0A0A; letter-spacing: -1px; text-transform: uppercase; }
+        h2 { font-size: 18px; margin: 0 0 8px 0; }
+        .header { border-bottom: 4px solid #FF3D00; padding-bottom: 14px; margin-bottom: 25px; }
+        .header p { margin: 6px 0 0 0; color: #666; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-family: monospace; }
+        .info-box { background: #F2EFE9; padding: 20px; margin-bottom: 25px; border-left: 4px solid #0A0A0A; }
+        .info-box p { margin: 0; color: #333; font-size: 13px; }
+        .info-box .meta { margin-top: 8px; font-size: 11px; color: #888; font-family: monospace; }
+        .verdict-box { text-align: center; padding: 35px; background: #0A0A0A; margin-bottom: 30px; }
+        .verdict-box p.label { margin: 0; font-size: 11px; color: #999; letter-spacing: 3px; text-transform: uppercase; font-family: monospace; }
+        .verdict-box p.verdict { margin: 12px 0 0 0; font-size: 46px; font-weight: bold; color: ${color}; font-family: 'Arial Black', sans-serif; letter-spacing: -1px; }
+        .section-title { color: #FF3D00; font-size: 16px; font-family: 'Arial Black', sans-serif; text-transform: uppercase; border-bottom: 2px solid #0A0A0A; padding-bottom: 6px; margin-top: 30px; margin-bottom: 14px; letter-spacing: -0.5px; }
+        .section-title-green { color: #16A34A; }
+        .section-title-red { color: #DC2626; }
+        .content { font-size: 13px; color: #333; margin-bottom: 22px; line-height: 1.75; }
+        .content ul { padding-left: 22px; margin: 8px 0; }
+        .content li { margin-bottom: 6px; }
+        .content strong { color: #0A0A0A; }
+        .footer { margin-top: 45px; padding-top: 18px; border-top: 2px solid #0A0A0A; text-align: center; color: #666; font-size: 10px; font-family: monospace; letter-spacing: 1px; text-transform: uppercase; }
+        .instruction { background: #FFF7E6; border-left: 4px solid #FF3D00; padding: 14px; margin-bottom: 22px; font-size: 12px; color: #333; }
+        @media print {
+          .instruction { display: none; }
+          .section-title { page-break-after: avoid; }
+          .content p, .content li { page-break-inside: avoid; }
+          .verdict-box { page-break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="instruction">
+        💡 <strong>To save as PDF:</strong> In the print dialog, set Destination to <strong>"Save as PDF"</strong>. Expand "More settings" and UNCHECK "Headers and footers" to remove the date stamps.
+      </div>
+
+      <div class="header">
+        <h1>VANGUARD</h1>
+        <p>M&A Due Diligence Report</p>
+      </div>
+
+      <div class="info-box">
+        <h2>Target: ${d.company}</h2>
+        <p>${d.description}</p>
+        <p class="meta">Generated: ${new Date().toLocaleString()}</p>
+      </div>
+
+      <div class="verdict-box">
+        <p class="label">Executive Decision</p>
+        <p class="verdict">${emoji} ${d.decision}</p>
+      </div>
+
+      <div class="section-title">📊 Due Diligence Findings</div>
+      <div class="content">${renderMarkdown(d.report)}</div>
+
+      <div class="section-title section-title-green">🐂 The Bull Case</div>
+      <div class="content">${renderMarkdown(d.bull)}</div>
+
+      <div class="section-title section-title-red">🐻 The Bear Case</div>
+      <div class="content">${renderMarkdown(d.bear)}</div>
+
+      <div class="section-title" style="color: ${color};">⚖️ Final Ruling</div>
+      <div class="content">${renderMarkdown(d.ruling)}</div>
+
+      <div class="footer">
+        Generated by VANGUARD · Powered by SerpApi (5 engines) + Groq AI<br/>
+        SerpApi India Hackathon 2026
+      </div>
+
+      <script>
+        window.onload = function() {
+          setTimeout(function() { window.print(); }, 700);
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.open();
+  printWindow.document.write(reportHtml);
+  printWindow.document.close();
+});
+</script>
+
+</body>
+</html>
